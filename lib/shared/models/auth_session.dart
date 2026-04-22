@@ -18,11 +18,30 @@ class AuthSession {
       token: json['token'] as String,
       userId: json['user_id'] as int,
       name: json['name'] as String,
-      role: switch (json['role'] as String) {
-        'admin' => UserRole.admin,
-        'performer' => UserRole.performer,
-        _ => UserRole.user,
-      },
+      role: _roleFromString(json['role'] as String),
     );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'token': token,
+    'user_id': userId,
+    'name': name,
+    'role': _roleToString(role),
+  };
+
+  static UserRole _roleFromString(String value) {
+    return switch (value) {
+      'admin' => UserRole.admin,
+      'performer' => UserRole.performer,
+      _ => UserRole.user,
+    };
+  }
+
+  static String _roleToString(UserRole role) {
+    return switch (role) {
+      UserRole.admin => 'admin',
+      UserRole.performer => 'performer',
+      UserRole.user => 'user',
+    };
   }
 }

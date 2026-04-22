@@ -33,6 +33,11 @@ class _Gate extends StatelessWidget {
     return ListenableBuilder(
       listenable: app,
       builder: (context, _) {
+        if (!app.isInitialized) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
         if (!app.isAuthenticated) {
           return const AuthScreen();
         }

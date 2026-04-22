@@ -2,7 +2,9 @@ import 'package:business_manager/core/app/app.dart';
 import 'package:flutter/material.dart';
 import 'package:business_manager/core/di/app_scope.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(AppScope(child: const StudioApp()));
+  final controller = AppController();
+  await controller.init();
+  runApp(AppScope(controller: controller, child: const StudioApp()));
 }

@@ -146,11 +146,6 @@ class _AuthScreenState extends State<AuthScreen> {
                             : 'Уже есть аккаунт? Войти',
                       ),
                     ),
-                    if (_isLogin)
-                      const Text(
-                        'Вход администратора выполняется по фиксированным данным.',
-                        style: TextStyle(color: Color(0xFF6B778D), fontSize: 12),
-                      ),
                   ],
                 ),
               ),
