@@ -1,4 +1,4 @@
-enum UserRole { user, admin }
+enum UserRole { user, performer, admin }
 
 class AuthSession {
   const AuthSession({
@@ -18,7 +18,11 @@ class AuthSession {
       token: json['token'] as String,
       userId: json['user_id'] as int,
       name: json['name'] as String,
-      role: (json['role'] as String) == 'admin' ? UserRole.admin : UserRole.user,
+      role: switch (json['role'] as String) {
+        'admin' => UserRole.admin,
+        'performer' => UserRole.performer,
+        _ => UserRole.user,
+      },
     );
   }
 }

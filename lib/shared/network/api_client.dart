@@ -1,17 +1,43 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../models/auth_session.dart';
 import '../models/chat_message_item.dart';
+import '../models/chat_participant_item.dart';
 import '../models/event_item.dart';
 import '../models/performer_item.dart';
+import '../models/pending_staff_member.dart';
+import '../models/product.dart';
+import '../models/service_type.dart';
+import '../models/staff_member.dart';
+import '../models/work_point.dart';
+
+class PendingApprovalException implements Exception {
+  const PendingApprovalException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
 
 class ApiClient {
   ApiClient({String? baseUrl})
-    : baseUrl = baseUrl ?? const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://127.0.0.1:8000');
+    : baseUrl = baseUrl ?? _resolveBaseUrl();
 
   final String baseUrl;
+
+  static String _resolveBaseUrl() {
+    const fromEnv = String.fromEnvironment('API_BASE_URL');
+    if (fromEnv.isNotEmpty) return fromEnv;
+
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000';
+    }
+    return 'http://127.0.0.1:8000';
+  }
 
   Map<String, String> _headers([String? token]) => {
     'Content-Type': 'application/json',
@@ -31,9 +57,19 @@ class ApiClient {
         'name': name,
         'email': email,
         'password': password,
-        'role': role == UserRole.admin ? 'admin' : 'user',
+        'role': switch (role) {
+          UserRole.admin => 'admin',
+          UserRole.performer => 'performer',
+          UserRole.user => 'user',
+        },
       }),
     );
+    if (response.statusCode == 202) {
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      throw PendingApprovalException(
+        (data['detail'] as String?) ?? 'Ожидает подтверждения администратором',
+      );
+    }
     _throwIfError(response);
     return AuthSession.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
   }
@@ -124,6 +160,143 @@ class ApiClient {
     );
     _throwIfError(response);
     return ChatMessageItem.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<List<ChatParticipantItem>> getEventBookedUsers(String token, int eventId) async {
+    final response = await http.get(Uri.parse('$baseUrl/events/$eventId/booked-users'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => ChatParticipantItem.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<List<ChatMessageItem>> getDirectChatMessages(String token, int eventId, {int? userId}) async {
+    final uri = Uri.parse('$baseUrl/events/$eventId/direct-chat').replace(
+      queryParameters: userId == null ? null : {'user_id': '$userId'},
+    );
+    final response = await http.get(uri, headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => ChatMessageItem.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<ChatMessageItem> sendDirectChatMessage(String token, int eventId, String text, {int? userId}) async {
+    final uri = Uri.parse('$baseUrl/events/$eventId/direct-chat').replace(
+      queryParameters: userId == null ? null : {'user_id': '$userId'},
+    );
+    final response = await http.post(
+      uri,
+      headers: _headers(token),
+      body: jsonEncode({'text': text}),
+    );
+    _throwIfError(response);
+    return ChatMessageItem.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<List<Product>> getProducts(String token) async {
+    final response = await http.get(Uri.parse('$baseUrl/products'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => Product.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<Product> createProduct(
+    String token, {
+    required String title,
+    required String category,
+    required int stock,
+    required int price,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/products'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'title': title,
+        'category': category,
+        'stock': stock,
+        'price': price,
+      }),
+    );
+    _throwIfError(response);
+    return Product.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<List<ServiceTypeItem>> getServices(String token) async {
+    final response = await http.get(Uri.parse('$baseUrl/services'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => ServiceTypeItem.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<ServiceTypeItem> createService(
+    String token, {
+    required String title,
+    required String category,
+    required int price,
+    required int durationMinutes,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/services'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'title': title,
+        'category': category,
+        'price': price,
+        'duration_minutes': durationMinutes,
+      }),
+    );
+    _throwIfError(response);
+    return ServiceTypeItem.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<List<WorkPointItem>> getWorkPoints(String token) async {
+    final response = await http.get(Uri.parse('$baseUrl/work-points'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => WorkPointItem.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<WorkPointItem> createWorkPoint(
+    String token, {
+    required String title,
+    required String address,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/work-points'),
+      headers: _headers(token),
+      body: jsonEncode({
+        'title': title,
+        'address': address,
+      }),
+    );
+    _throwIfError(response);
+    return WorkPointItem.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
+  }
+
+  Future<List<PendingStaffMember>> getPendingStaff(String token) async {
+    final response = await http.get(Uri.parse('$baseUrl/staff/pending'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => PendingStaffMember.fromJson(item as Map<String, dynamic>)).toList();
+  }
+
+  Future<void> approveStaff(
+    String token, {
+    required int userId,
+    required int workPointId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/staff/$userId/approve'),
+      headers: _headers(token),
+      body: jsonEncode({'work_point_id': workPointId}),
+    );
+    _throwIfError(response);
+  }
+
+  Future<List<StaffMember>> getStaff(String token) async {
+    final response = await http.get(Uri.parse('$baseUrl/staff'), headers: _headers(token));
+    _throwIfError(response);
+    final data = jsonDecode(response.body) as List<dynamic>;
+    return data.map((item) => StaffMember.fromJson(item as Map<String, dynamic>)).toList();
   }
 
   void _throwIfError(http.Response response) {

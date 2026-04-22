@@ -1,12 +1,10 @@
 import 'package:flutter/widgets.dart';
 
 import '../../shared/models/auth_session.dart';
-import '../../shared/data/mock_data.dart';
 import '../../shared/network/api_client.dart';
 
 class AppController extends ChangeNotifier {
   final ApiClient api = ApiClient();
-  final MockDataRepository repository = const MockDataRepository();
 
   AuthSession? _session;
   int? _selectedEventId;

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timedelta, timezone
 
 import jwt
@@ -14,8 +15,11 @@ from .models import User, UserRole
 SECRET_KEY = "replace-me-in-production"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
+DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@studio.com")
+DEFAULT_ADMIN_PASSWORD = os.getenv("DEFAULT_ADMIN_PASSWORD", "Admin12345!")
+DEFAULT_ADMIN_NAME = os.getenv("DEFAULT_ADMIN_NAME", "Главный админ")
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 security = HTTPBearer(auto_error=False)
 
 
@@ -55,6 +59,11 @@ def get_current_user(
     user = db.get(User, int(user_id))
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+    if user.role == UserRole.performer and not user.is_approved:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Регистрация сотрудника ожидает подтверждения администратором",
+        )
     return user
 
 
@@ -62,3 +71,23 @@ def require_admin(user: User = Depends(get_current_user)) -> User:
     if user.role != UserRole.admin:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return user
+
+
+def ensure_default_admin(db: Session) -> None:
+    admin = db.query(User).filter(User.email == DEFAULT_ADMIN_EMAIL.lower()).first()
+    if admin:
+        admin.name = DEFAULT_ADMIN_NAME
+        admin.role = UserRole.admin
+        admin.password_hash = hash_password(DEFAULT_ADMIN_PASSWORD)
+        admin.is_approved = True
+    else:
+        db.add(
+            User(
+                name=DEFAULT_ADMIN_NAME,
+                email=DEFAULT_ADMIN_EMAIL.lower(),
+                password_hash=hash_password(DEFAULT_ADMIN_PASSWORD),
+                role=UserRole.admin,
+                is_approved=True,
+            )
+        )
+    db.commit()

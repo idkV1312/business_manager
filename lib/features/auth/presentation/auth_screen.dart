@@ -1,7 +1,7 @@
+Ôªøimport 'package:business_manager/core/di/app_scope.dart';
+import 'package:business_manager/shared/models/auth_session.dart';
+import 'package:business_manager/shared/network/api_client.dart';
 import 'package:flutter/material.dart';
-
-import '../../../core/di/app_scope.dart';
-import '../../../shared/models/auth_session.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -36,11 +36,21 @@ class _AuthScreenState extends State<AuthScreen> {
       if (_isLogin) {
         await app.login(_email.text.trim(), _password.text.trim());
       } else {
-        await app.register(_name.text.trim(), _email.text.trim(), _password.text.trim(), _role);
+        await app.register(
+          _name.text.trim(),
+          _email.text.trim(),
+          _password.text.trim(),
+          _role,
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Œ¯Ë·Í‡: $e')));
+      if (e is PendingApprovalException) {
+        setState(() => _isLogin = true);
+      }
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('–û—à–∏–±–∫–∞: $e')));
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -64,37 +74,53 @@ class _AuthScreenState extends State<AuthScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(_isLogin ? '¬ıÓ‰' : '–Â„ËÒÚ‡ˆËˇ', style: theme.textTheme.headlineMedium),
+                    Text(
+                      _isLogin ? '–í—Ö–æ–¥' : '–†–µ–≥–∏—Å—Ç—Ä–∞—Ü–∏—è',
+                      style: theme.textTheme.headlineMedium,
+                    ),
                     const SizedBox(height: 12),
                     if (!_isLogin) ...[
                       TextFormField(
                         controller: _name,
-                        decoration: const InputDecoration(labelText: '»Ïˇ'),
-                        validator: (v) => (v == null || v.trim().length < 2) ? 'ÃËÌËÏÛÏ 2 ÒËÏ‚ÓÎ‡' : null,
+                        decoration: const InputDecoration(labelText: '–ò–º—è'),
+                        validator: (v) => (v == null || v.trim().length < 2)
+                            ? '–ú–∏–Ω–∏–º—É–º 2 —Å–∏–º–≤–æ–ª–∞'
+                            : null,
                       ),
                       const SizedBox(height: 10),
                     ],
                     TextFormField(
                       controller: _email,
                       decoration: const InputDecoration(labelText: 'Email'),
-                      validator: (v) => (v == null || !v.contains('@')) ? '¬‚Â‰ËÚÂ email' : null,
+                      validator: (v) => (v == null || !v.contains('@'))
+                          ? '–í–≤–µ–¥–∏—Ç–µ email'
+                          : null,
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
                       controller: _password,
                       obscureText: true,
-                      decoration: const InputDecoration(labelText: 'œ‡ÓÎ¸'),
-                      validator: (v) => (v == null || v.trim().length < 6) ? 'ÃËÌËÏÛÏ 6 ÒËÏ‚ÓÎÓ‚' : null,
+                      decoration: const InputDecoration(labelText: '–ü–∞—Ä–æ–ª—å'),
+                      validator: (v) => (v == null || v.trim().length < 6)
+                          ? '–ú–∏–Ω–∏–º—É–º 6 —Å–∏–º–≤–æ–ª–æ–≤'
+                          : null,
                     ),
                     if (!_isLogin) ...[
                       const SizedBox(height: 10),
                       SegmentedButton<UserRole>(
                         segments: const [
-                          ButtonSegment(value: UserRole.user, label: Text('œÓÎ¸ÁÓ‚‡ÚÂÎ¸')),
-                          ButtonSegment(value: UserRole.admin, label: Text('¿‰ÏËÌ')),
+                          ButtonSegment(
+                            value: UserRole.user,
+                            label: Text('–ö–ª–∏–µ–Ω—Ç'),
+                          ),
+                          ButtonSegment(
+                            value: UserRole.performer,
+                            label: Text('–ò—Å–ø–æ–ª–Ω–∏—Ç–µ–ª—å'),
+                          ),
                         ],
                         selected: {_role},
-                        onSelectionChanged: (value) => setState(() => _role = value.first),
+                        onSelectionChanged: (value) =>
+                            setState(() => _role = value.first),
                       ),
                     ],
                     const SizedBox(height: 14),
@@ -102,14 +128,29 @@ class _AuthScreenState extends State<AuthScreen> {
                       width: double.infinity,
                       child: FilledButton(
                         onPressed: _loading ? null : _submit,
-                        child: Text(_loading ? '«‡„ÛÁÍ‡...' : (_isLogin ? '¬ÓÈÚË' : '—ÓÁ‰‡Ú¸ ‡ÍÍ‡ÛÌÚ')),
+                        child: Text(
+                          _loading
+                              ? '–ó–∞–≥—Ä—É–∑–∫–∞...'
+                              : (_isLogin ? '–í–æ–π—Ç–∏' : '–°–æ–∑–¥–∞—Ç—å –∞–∫–∫–∞—É–Ω—Ç'),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 6),
                     TextButton(
-                      onPressed: _loading ? null : () => setState(() => _isLogin = !_isLogin),
-                      child: Text(_isLogin ? 'ÕÂÚ ‡ÍÍ‡ÛÌÚ‡? «‡Â„ËÒÚËÓ‚‡Ú¸Òˇ' : '”ÊÂ ÂÒÚ¸ ‡ÍÍ‡ÛÌÚ? ¬ÓÈÚË'),
+                      onPressed: _loading
+                          ? null
+                          : () => setState(() => _isLogin = !_isLogin),
+                      child: Text(
+                        _isLogin
+                            ? '–ù–µ—Ç –∞–∫–∫–∞—É–Ω—Ç–∞? –ó–∞—Ä–µ–≥–∏—Å—Ç—Ä–∏—Ä–æ–≤–∞—Ç—å—Å—è'
+                            : '–£–∂–µ –µ—Å—Ç—å –∞–∫–∫–∞—É–Ω—Ç? –í–æ–π—Ç–∏',
+                      ),
                     ),
+                    if (_isLogin)
+                      const Text(
+                        '–í—Ö–æ–¥ –∞–¥–º–∏–Ω–∏—Å—Ç—Ä–∞—Ç–æ—Ä–∞ –≤—ã–ø–æ–ª–Ω—è–µ—Ç—Å—è –ø–æ —Ñ–∏–∫—Å–∏—Ä–æ–≤–∞–Ω–Ω—ã–º –¥–∞–Ω–Ω—ã–º.',
+                        style: TextStyle(color: Color(0xFF6B778D), fontSize: 12),
+                      ),
                   ],
                 ),
               ),

@@ -8,6 +8,9 @@ class EventItem {
     required this.endAt,
     required this.performerIds,
     required this.performerNames,
+    required this.performerUserIds,
+    required this.isBooked,
+    required this.bookedByMe,
   });
 
   final int id;
@@ -18,6 +21,9 @@ class EventItem {
   final DateTime endAt;
   final List<int> performerIds;
   final List<String> performerNames;
+  final List<int> performerUserIds;
+  final bool isBooked;
+  final bool bookedByMe;
 
   factory EventItem.fromJson(Map<String, dynamic> json) {
     return EventItem(
@@ -29,6 +35,9 @@ class EventItem {
       endAt: DateTime.parse(json['end_at'] as String).toLocal(),
       performerIds: ((json['performer_ids'] as List?) ?? []).cast<int>(),
       performerNames: ((json['performer_names'] as List?) ?? []).cast<String>(),
+      performerUserIds: ((json['performer_user_ids'] as List?) ?? []).cast<int>(),
+      isBooked: json['is_booked'] as bool? ?? false,
+      bookedByMe: json['booked_by_me'] as bool? ?? false,
     );
   }
 }

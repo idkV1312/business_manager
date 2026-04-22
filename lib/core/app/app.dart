@@ -1,15 +1,14 @@
+Ôªøimport 'package:business_manager/core/di/app_scope.dart';
+import 'package:business_manager/core/theme/app_theme.dart';
+import 'package:business_manager/features/auth/presentation/auth_screen.dart';
+import 'package:business_manager/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:business_manager/features/discounts/presentation/discounts_screen.dart';
+import 'package:business_manager/features/expenses/presentation/expenses_screen.dart';
+import 'package:business_manager/features/inventory/presentation/inventory_screen.dart';
+import 'package:business_manager/features/messages/presentation/messages_screen.dart';
+import 'package:business_manager/features/schedule/presentation/schedule_screen.dart';
+import 'package:business_manager/shared/models/auth_session.dart';
 import 'package:flutter/material.dart';
-
-import '../../features/auth/presentation/auth_screen.dart';
-import '../../features/dashboard/presentation/dashboard_screen.dart';
-import '../../features/discounts/presentation/discounts_screen.dart';
-import '../../features/expenses/presentation/expenses_screen.dart';
-import '../../features/inventory/presentation/inventory_screen.dart';
-import '../../features/messages/presentation/messages_screen.dart';
-import '../../features/schedule/presentation/schedule_screen.dart';
-import '../di/app_scope.dart';
-import '../navigation/app_tab.dart';
-import '../theme/app_theme.dart';
 
 class StudioApp extends StatelessWidget {
   const StudioApp({super.key});
@@ -51,17 +50,22 @@ class _RootShell extends StatefulWidget {
 }
 
 class _RootShellState extends State<_RootShell> {
-  AppTab _tab = AppTab.dashboard;
+  int _selectedIndex = 0;
 
   @override
   Widget build(BuildContext context) {
     final app = AppScope.of(context);
+    final role = app.session!.role;
+    final tabs = _tabsForRole(role);
+    if (_selectedIndex >= tabs.length) {
+      _selectedIndex = 0;
+    }
 
     return Scaffold(
       appBar: AppBar(
         actions: [
           IconButton(
-            tooltip: '¬˚ÈÚË',
+            tooltip: '–í—ã–π—Ç–∏',
             onPressed: app.logout,
             icon: const Icon(Icons.logout_rounded),
           ),
@@ -69,35 +73,65 @@ class _RootShellState extends State<_RootShell> {
         ],
       ),
       body: IndexedStack(
-        index: _tab.index,
-        children: const [
-          DashboardScreen(),
-          ScheduleScreen(),
-          InventoryScreen(),
-          ExpensesScreen(),
-          MessagesScreen(),
-        ],
+        index: _selectedIndex,
+        children: tabs.map((tab) => tab.screen).toList(),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const DiscountsScreen()),
-          );
-        },
-        label: const Text('—ÍË‰ÍË'),
-        icon: const Icon(Icons.percent_rounded),
-      ),
+      floatingActionButton: role == UserRole.admin
+          ? FloatingActionButton.extended(
+              onPressed: () {
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const DiscountsScreen()));
+              },
+              label: const Text('–°–∫–∏–¥–∫–∏'),
+              icon: const Icon(Icons.percent_rounded),
+            )
+          : null,
       bottomNavigationBar: NavigationBar(
-        selectedIndex: _tab.index,
-        onDestinationSelected: (value) => setState(() => _tab = AppTab.values[value]),
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.home_outlined), label: '√Î‡‚Ì‡ˇ'),
-          NavigationDestination(icon: Icon(Icons.calendar_month_outlined), label: '—Â‡ÌÒ˚'),
-          NavigationDestination(icon: Icon(Icons.inventory_2_outlined), label: '“Ó‚‡˚'),
-          NavigationDestination(icon: Icon(Icons.bar_chart_outlined), label: '–‡ÒıÓ‰˚'),
-          NavigationDestination(icon: Icon(Icons.message_outlined), label: '◊‡Ú'),
-        ],
+        selectedIndex: _selectedIndex,
+        onDestinationSelected: (value) => setState(() => _selectedIndex = value),
+        destinations: tabs
+            .map(
+              (tab) => NavigationDestination(
+                icon: Icon(tab.icon),
+                label: tab.label,
+              ),
+            )
+            .toList(),
       ),
     );
   }
+
+  List<_ShellTab> _tabsForRole(UserRole role) {
+    switch (role) {
+      case UserRole.admin:
+        return const [
+          _ShellTab('–ì–ª–∞–≤–Ω–∞—è', Icons.home_outlined, DashboardScreen()),
+          _ShellTab('–°–µ–∞–Ω—Å—ã', Icons.calendar_month_outlined, ScheduleScreen()),
+          _ShellTab('–°–∫–ª–∞–¥', Icons.inventory_2_outlined, InventoryScreen()),
+          _ShellTab('–†–∞—Å—Ö–æ–¥—ã', Icons.bar_chart_outlined, ExpensesScreen()),
+          _ShellTab('–ß–∞—Ç', Icons.message_outlined, MessagesScreen()),
+        ];
+      case UserRole.performer:
+        return const [
+          _ShellTab('–ì–ª–∞–≤–Ω–∞—è', Icons.home_outlined, DashboardScreen()),
+          _ShellTab('–°–µ–∞–Ω—Å—ã', Icons.calendar_month_outlined, ScheduleScreen()),
+          _ShellTab('–°–∫–ª–∞–¥', Icons.inventory_2_outlined, InventoryScreen()),
+          _ShellTab('–ß–∞—Ç', Icons.message_outlined, MessagesScreen()),
+        ];
+      case UserRole.user:
+        return const [
+          _ShellTab('–ó–∞–ø–∏—Å—å', Icons.calendar_month_outlined, ScheduleScreen()),
+          _ShellTab('–ß–∞—Ç', Icons.message_outlined, MessagesScreen()),
+        ];
+    }
+  }
+}
+
+class _ShellTab {
+  const _ShellTab(this.label, this.icon, this.screen);
+
+  final String label;
+  final IconData icon;
+  final Widget screen;
 }
