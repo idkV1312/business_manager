@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from .db import get_db
 from .models import User, UserRole
 
-SECRET_KEY = "replace-me-in-production"
+SECRET_KEY = os.getenv("SECRET_KEY", "replace-me-in-production")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_HOURS = 24
 DEFAULT_ADMIN_EMAIL = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@studio.com")

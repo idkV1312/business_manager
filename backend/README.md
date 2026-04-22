@@ -22,6 +22,6 @@ Employees register as `performer`, then admin approves them and assigns a work p
 
 ## Production notes
 
-- Replace `SECRET_KEY` in `app/auth.py`.
+- Create `.env` from `.env.example` and set strong values for `SECRET_KEY` and `DEFAULT_ADMIN_PASSWORD`.
 - Change CORS origins in `app/main.py`.
 - Move SQLite to Postgres for production hosting.
