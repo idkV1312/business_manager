@@ -8,6 +8,7 @@ import '../../shared/network/api_client.dart';
 
 class AppController extends ChangeNotifier {
   static const _sessionStorageKey = 'auth_session';
+  static const _scheduleCalendarModePrefix = 'schedule_calendar_mode_v1_';
 
   AppController();
 
@@ -46,8 +47,18 @@ class AppController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> register(String name, String email, String password, UserRole role) async {
-    _session = await api.register(name: name, email: email, password: password, role: role);
+  Future<void> register(
+    String name,
+    String email,
+    String password,
+    UserRole role,
+  ) async {
+    _session = await api.register(
+      name: name,
+      email: email,
+      password: password,
+      role: role,
+    );
     await _saveSession();
     notifyListeners();
   }
@@ -70,11 +81,33 @@ class AppController extends ChangeNotifier {
     final rawSession = jsonEncode(_session!.toJson());
     await prefs.setString(_sessionStorageKey, rawSession);
   }
+
+  Future<String?> getScheduleCalendarMode() async {
+    final session = _session;
+    if (session == null) return null;
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    return prefs.getString('$_scheduleCalendarModePrefix${session.userId}');
+  }
+
+  Future<void> setScheduleCalendarMode(String mode) async {
+    final session = _session;
+    if (session == null) return;
+    final prefs = _prefs ?? await SharedPreferences.getInstance();
+    _prefs = prefs;
+    await prefs.setString(
+      '$_scheduleCalendarModePrefix${session.userId}',
+      mode,
+    );
+  }
 }
 
 class AppScope extends InheritedNotifier<AppController> {
-  AppScope({super.key, required AppController controller, required super.child})
-    : super(notifier: controller);
+  const AppScope({
+    super.key,
+    required AppController controller,
+    required super.child,
+  }) : super(notifier: controller);
 
   static AppController of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppScope>();

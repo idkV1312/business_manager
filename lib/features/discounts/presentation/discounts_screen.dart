@@ -34,7 +34,10 @@ class _DiscountsScreenState extends State<DiscountsScreen> {
   Widget build(BuildContext context) {
     return PrimaryScaffold(
       title: 'Прайс-лист',
-      action: IconButton(onPressed: _reload, icon: const Icon(Icons.refresh_rounded)),
+      action: IconButton(
+        onPressed: _reload,
+        icon: const Icon(Icons.refresh_rounded),
+      ),
       body: _servicesFuture == null
           ? const Center(child: CircularProgressIndicator())
           : FutureBuilder<List<ServiceTypeItem>>(
@@ -52,7 +55,7 @@ class _DiscountsScreenState extends State<DiscountsScreen> {
                 }
                 return ListView.separated(
                   itemCount: services.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
+                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final item = services[index];
                     return Card(
@@ -62,7 +65,9 @@ class _DiscountsScreenState extends State<DiscountsScreen> {
                           child: Icon(Icons.local_offer_outlined),
                         ),
                         title: Text(item.title),
-                        subtitle: Text('${item.category} • ${item.durationMinutes} мин'),
+                        subtitle: Text(
+                          '${item.category} • ${item.durationMinutes} мин',
+                        ),
                         trailing: Text('${item.price} ₽'),
                       ),
                     );

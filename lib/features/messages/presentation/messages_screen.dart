@@ -12,7 +12,8 @@ class MessagesScreen extends StatefulWidget {
   State<MessagesScreen> createState() => _MessagesScreenState();
 }
 
-class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProviderStateMixin {
+class _MessagesScreenState extends State<MessagesScreen>
+    with SingleTickerProviderStateMixin {
   final _input = TextEditingController();
   late Future<List<ChatMessageItem>> _eventMessagesFuture;
   late Future<List<ChatMessageItem>> _directMessagesFuture;
@@ -51,7 +52,10 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
     final app = AppScope.of(context);
     final eventId = app.selectedEventId;
     if (eventId != null) {
-      _eventMessagesFuture = app.api.getChatMessages(app.session!.token, eventId);
+      _eventMessagesFuture = app.api.getChatMessages(
+        app.session!.token,
+        eventId,
+      );
       _reloadDirectData();
     } else {
       _eventMessagesFuture = Future.value(const []);
@@ -70,21 +74,31 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
     }
 
     if (app.session!.role == UserRole.admin) {
-      _directUsersFuture = app.api.getEventBookedUsers(app.session!.token, eventId);
+      _directUsersFuture = app.api.getEventBookedUsers(
+        app.session!.token,
+        eventId,
+      );
       _directMessagesFuture = _directUsersFuture.then((users) {
         if (users.isEmpty) {
           _directUserId = null;
           return const <ChatMessageItem>[];
         }
         _directUserId ??= users.first.id;
-        return app.api.getDirectChatMessages(app.session!.token, eventId, userId: _directUserId);
+        return app.api.getDirectChatMessages(
+          app.session!.token,
+          eventId,
+          userId: _directUserId,
+        );
       });
       return;
     }
 
     if (app.session!.role == UserRole.user) {
       _directUsersFuture = Future.value(const []);
-      _directMessagesFuture = app.api.getDirectChatMessages(app.session!.token, eventId);
+      _directMessagesFuture = app.api.getDirectChatMessages(
+        app.session!.token,
+        eventId,
+      );
       return;
     }
 
@@ -104,7 +118,10 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
     );
     _input.clear();
     setState(() {
-      _eventMessagesFuture = app.api.getChatMessages(app.session!.token, eventId);
+      _eventMessagesFuture = app.api.getChatMessages(
+        app.session!.token,
+        eventId,
+      );
     });
   }
 
@@ -148,7 +165,7 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
 
         return ListView.separated(
           itemCount: messages.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          separatorBuilder: (_, _) => const SizedBox(height: 8),
           itemBuilder: (context, index) {
             final message = messages[index];
             final isMine = message.authorId == app.session!.userId;
@@ -166,7 +183,10 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(message.authorName, style: Theme.of(context).textTheme.labelLarge),
+                    Text(
+                      message.authorName,
+                      style: Theme.of(context).textTheme.labelLarge,
+                    ),
                     const SizedBox(height: 4),
                     Text(message.text),
                   ],
@@ -184,10 +204,14 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
     final app = AppScope.of(context);
     final eventId = app.selectedEventId;
     final isDirectTab = _tabController.index == 1;
-    final canUseDirect = app.session!.role == UserRole.user || app.session!.role == UserRole.admin;
+    final canUseDirect =
+        app.session!.role == UserRole.user ||
+        app.session!.role == UserRole.admin;
     final canSend =
         eventId != null &&
-        (!isDirectTab || (canUseDirect && (app.session!.role == UserRole.user || _directUserId != null)));
+        (!isDirectTab ||
+            (canUseDirect &&
+                (app.session!.role == UserRole.user || _directUserId != null)));
 
     return PrimaryScaffold(
       title: 'Сообщения',
@@ -228,7 +252,11 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
                       children: [
                         _buildMessagesList(_eventMessagesFuture),
                         if (!canUseDirect)
-                          const Center(child: Text('Личный чат доступен только администратору и пользователю'))
+                          const Center(
+                            child: Text(
+                              'Личный чат доступен только администратору и пользователю',
+                            ),
+                          )
                         else
                           Column(
                             children: [
@@ -236,29 +264,43 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
                                 FutureBuilder<List<ChatParticipantItem>>(
                                   future: _directUsersFuture,
                                   builder: (context, snapshot) {
-                                    final users = snapshot.data ?? const <ChatParticipantItem>[];
-                                    if (snapshot.connectionState == ConnectionState.waiting) {
-                                      return const LinearProgressIndicator(minHeight: 2);
+                                    final users =
+                                        snapshot.data ??
+                                        const <ChatParticipantItem>[];
+                                    if (snapshot.connectionState ==
+                                        ConnectionState.waiting) {
+                                      return const LinearProgressIndicator(
+                                        minHeight: 2,
+                                      );
                                     }
                                     if (snapshot.hasError) {
                                       return Padding(
-                                        padding: const EdgeInsets.only(bottom: 8),
-                                        child: Text('Не удалось загрузить пользователей: ${snapshot.error}'),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
+                                        child: Text(
+                                          'Не удалось загрузить пользователей: ${snapshot.error}',
+                                        ),
                                       );
                                     }
                                     if (users.isEmpty) {
                                       return const Padding(
                                         padding: EdgeInsets.only(bottom: 8),
-                                        child: Text('Нет пользователей с записью на событие'),
+                                        child: Text(
+                                          'Нет пользователей с записью на событие',
+                                        ),
                                       );
                                     }
 
-                                    final selectedId = _directUserId ?? users.first.id;
+                                    final selectedId =
+                                        _directUserId ?? users.first.id;
                                     return Padding(
                                       padding: const EdgeInsets.only(bottom: 8),
                                       child: DropdownButtonFormField<int>(
-                                        value: selectedId,
-                                        decoration: const InputDecoration(labelText: 'Пользователь'),
+                                        initialValue: selectedId,
+                                        decoration: const InputDecoration(
+                                          labelText: 'Пользователь',
+                                        ),
                                         items: users
                                             .map(
                                               (user) => DropdownMenuItem<int>(
@@ -271,18 +313,23 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
                                           if (value == null) return;
                                           setState(() {
                                             _directUserId = value;
-                                            _directMessagesFuture = app.api.getDirectChatMessages(
-                                              app.session!.token,
-                                              eventId!,
-                                              userId: value,
-                                            );
+                                            _directMessagesFuture = app.api
+                                                .getDirectChatMessages(
+                                                  app.session!.token,
+                                                  eventId,
+                                                  userId: value,
+                                                );
                                           });
                                         },
                                       ),
                                     );
                                   },
                                 ),
-                              Expanded(child: _buildMessagesList(_directMessagesFuture)),
+                              Expanded(
+                                child: _buildMessagesList(
+                                  _directMessagesFuture,
+                                ),
+                              ),
                             ],
                           ),
                       ],
@@ -299,13 +346,17 @@ class _MessagesScreenState extends State<MessagesScreen> with SingleTickerProvid
                   controller: _input,
                   enabled: canSend,
                   decoration: InputDecoration(
-                    hintText: isDirectTab ? 'Сообщение для личного чата...' : 'Введите сообщение...',
+                    hintText: isDirectTab
+                        ? 'Сообщение для личного чата...'
+                        : 'Введите сообщение...',
                   ),
                 ),
               ),
               const SizedBox(width: 8),
               FilledButton(
-                onPressed: canSend ? (isDirectTab ? _sendDirectMessage : _sendEventMessage) : null,
+                onPressed: canSend
+                    ? (isDirectTab ? _sendDirectMessage : _sendEventMessage)
+                    : null,
                 child: const Text('Отправить'),
               ),
             ],

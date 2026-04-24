@@ -84,7 +84,8 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ),
               ],
               selected: {_mode},
-              onSelectionChanged: (value) => setState(() => _mode = value.first),
+              onSelectionChanged: (value) =>
+                  setState(() => _mode = value.first),
             ),
           ),
           const SizedBox(height: 12),
@@ -108,7 +109,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Ошибка загрузки товаров: ${snapshot.error}'));
+          return Center(
+            child: Text('Ошибка загрузки товаров: ${snapshot.error}'),
+          );
         }
         final products = snapshot.data ?? const [];
         if (products.isEmpty) {
@@ -117,7 +120,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
         return ListView.separated(
           itemCount: products.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final item = products[index];
             return Card(
@@ -128,7 +131,10 @@ class _InventoryScreenState extends State<InventoryScreen> {
                 ),
                 title: Text(item.title),
                 subtitle: Text('${item.category} • Остаток: ${item.stock}'),
-                trailing: Text('${item.price} ₽', style: theme.textTheme.titleMedium),
+                trailing: Text(
+                  '${item.price} ₽',
+                  style: theme.textTheme.titleMedium,
+                ),
               ),
             );
           },
@@ -147,7 +153,9 @@ class _InventoryScreenState extends State<InventoryScreen> {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(child: Text('Ошибка загрузки услуг: ${snapshot.error}'));
+          return Center(
+            child: Text('Ошибка загрузки услуг: ${snapshot.error}'),
+          );
         }
         final services = snapshot.data ?? const [];
         if (services.isEmpty) {
@@ -156,7 +164,7 @@ class _InventoryScreenState extends State<InventoryScreen> {
 
         return ListView.separated(
           itemCount: services.length,
-          separatorBuilder: (_, __) => const SizedBox(height: 10),
+          separatorBuilder: (_, _) => const SizedBox(height: 10),
           itemBuilder: (context, index) {
             final item = services[index];
             return Card(
@@ -166,8 +174,13 @@ class _InventoryScreenState extends State<InventoryScreen> {
                   child: Icon(Icons.design_services_outlined),
                 ),
                 title: Text(item.title),
-                subtitle: Text('${item.category} • ${item.durationMinutes} мин'),
-                trailing: Text('${item.price} ₽', style: theme.textTheme.titleMedium),
+                subtitle: Text(
+                  '${item.category} • ${item.durationMinutes} мин',
+                ),
+                trailing: Text(
+                  '${item.price} ₽',
+                  style: theme.textTheme.titleMedium,
+                ),
               ),
             );
           },
@@ -183,10 +196,12 @@ class _CreateInventoryItemDialog extends StatefulWidget {
   final _InventoryMode mode;
 
   @override
-  State<_CreateInventoryItemDialog> createState() => _CreateInventoryItemDialogState();
+  State<_CreateInventoryItemDialog> createState() =>
+      _CreateInventoryItemDialogState();
 }
 
-class _CreateInventoryItemDialogState extends State<_CreateInventoryItemDialog> {
+class _CreateInventoryItemDialogState
+    extends State<_CreateInventoryItemDialog> {
   final _title = TextEditingController();
   final _category = TextEditingController();
   final _price = TextEditingController();
@@ -247,7 +262,9 @@ class _CreateInventoryItemDialogState extends State<_CreateInventoryItemDialog> 
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Ошибка: $e')));
     } finally {
       if (mounted) setState(() => _saving = false);
     }
@@ -264,9 +281,15 @@ class _CreateInventoryItemDialogState extends State<_CreateInventoryItemDialog> 
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              TextField(controller: _title, decoration: const InputDecoration(labelText: 'Название')),
+              TextField(
+                controller: _title,
+                decoration: const InputDecoration(labelText: 'Название'),
+              ),
               const SizedBox(height: 8),
-              TextField(controller: _category, decoration: const InputDecoration(labelText: 'Категория')),
+              TextField(
+                controller: _category,
+                decoration: const InputDecoration(labelText: 'Категория'),
+              ),
               const SizedBox(height: 8),
               TextField(
                 controller: _price,
@@ -277,15 +300,23 @@ class _CreateInventoryItemDialogState extends State<_CreateInventoryItemDialog> 
               TextField(
                 controller: isProduct ? _stock : _duration,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: isProduct ? 'Остаток' : 'Длительность (мин)'),
+                decoration: InputDecoration(
+                  labelText: isProduct ? 'Остаток' : 'Длительность (мин)',
+                ),
               ),
             ],
           ),
         ),
       ),
       actions: [
-        TextButton(onPressed: _saving ? null : () => Navigator.of(context).pop(false), child: const Text('Отмена')),
-        FilledButton(onPressed: _saving ? null : _save, child: Text(_saving ? 'Сохранение...' : 'Сохранить')),
+        TextButton(
+          onPressed: _saving ? null : () => Navigator.of(context).pop(false),
+          child: const Text('Отмена'),
+        ),
+        FilledButton(
+          onPressed: _saving ? null : _save,
+          child: Text(_saving ? 'Сохранение...' : 'Сохранить'),
+        ),
       ],
     );
   }

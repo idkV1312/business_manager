@@ -20,7 +20,13 @@ class AppTheme {
       useMaterial3: true,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _page,
-      fontFamilyFallback: const ['Georgia', 'Times New Roman', 'Segoe UI', 'Roboto', 'Arial'],
+      fontFamilyFallback: const [
+        'Georgia',
+        'Times New Roman',
+        'Segoe UI',
+        'Roboto',
+        'Arial',
+      ],
     );
 
     final textTheme = base.textTheme.copyWith(
@@ -69,14 +75,21 @@ class AppTheme {
         selectedColor: const Color(0xFFFDE7EF),
         side: const BorderSide(color: Color(0xFFE4DCE1)),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        labelStyle: textTheme.labelLarge?.copyWith(color: const Color(0xFF332E3C)),
+        labelStyle: textTheme.labelLarge?.copyWith(
+          color: const Color(0xFF332E3C),
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: const Color(0xFFFAFAFC),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        hintStyle: textTheme.bodyMedium?.copyWith(color: const Color(0xFF8B8496)),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 12,
+        ),
+        hintStyle: textTheme.bodyMedium?.copyWith(
+          color: const Color(0xFF8B8496),
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: Color(0xFFD7D2DA)),
@@ -126,17 +139,15 @@ class AppTheme {
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.transparent,
         indicatorColor: const Color(0xFFFDE7EF),
-        labelTextStyle: MaterialStateProperty.resolveWith((states) {
-          final selected = states.contains(MaterialState.selected);
+        labelTextStyle: WidgetStateProperty.resolveWith((states) {
+          final selected = states.contains(WidgetState.selected);
           return textTheme.labelSmall?.copyWith(
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             color: selected ? _brand : const Color(0xFF756F7F),
           );
         }),
       ),
-      iconTheme: const IconThemeData(
-        color: Color(0xFF3D3748),
-      ),
+      iconTheme: const IconThemeData(color: Color(0xFF3D3748)),
     );
   }
 }

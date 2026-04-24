@@ -42,7 +42,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return PrimaryScaffold(
       title: 'Nika Studio',
-      action: IconButton(onPressed: _reload, icon: const Icon(Icons.refresh_rounded)),
+      action: IconButton(
+        onPressed: _reload,
+        icon: const Icon(Icons.refresh_rounded),
+      ),
       body: Column(
         children: [
           if (role == UserRole.admin) ...[
@@ -52,9 +55,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Управление командой', style: theme.textTheme.titleMedium),
+                    Text(
+                      'Управление командой',
+                      style: theme.textTheme.titleMedium,
+                    ),
                     const SizedBox(height: 8),
-                    const Text('Подтвердите новых сотрудников и назначьте им рабочую точку.'),
+                    const Text(
+                      'Подтвердите новых сотрудников и назначьте им рабочую точку.',
+                    ),
                     const SizedBox(height: 10),
                     FilledButton.icon(
                       onPressed: () {
@@ -93,7 +101,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       final today = DateTime.now();
                       final todaysCount = events.where((e) {
                         final d = e.startAt.toLocal();
-                        return d.year == today.year && d.month == today.month && d.day == today.day;
+                        return d.year == today.year &&
+                            d.month == today.month &&
+                            d.day == today.day;
                       }).length;
 
                       return ListView(
@@ -102,26 +112,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             child: Padding(
                               padding: const EdgeInsets.all(14),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   _kpi('Всего записей', '${events.length}'),
                                   _kpi('Сегодня', '$todaysCount'),
-                                  _kpi('Исполнителей', '${_countPerformers(events)}'),
+                                  _kpi(
+                                    'Исполнителей',
+                                    '${_countPerformers(events)}',
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text('Ближайшие записи', style: theme.textTheme.titleMedium),
+                          Text(
+                            'Ближайшие записи',
+                            style: theme.textTheme.titleMedium,
+                          ),
                           const SizedBox(height: 8),
-                          ...events.take(6).map(
+                          ...events
+                              .take(6)
+                              .map(
                                 (e) => Card(
                                   margin: const EdgeInsets.only(bottom: 10),
                                   child: ListTile(
                                     onTap: () => _openEventDetails(e),
                                     title: Text(e.title),
-                                    subtitle: Text('${e.category} • ${_dt(e.startAt)} - ${_dt(e.endAt)}'),
-                                    trailing: const Icon(Icons.chevron_right_rounded),
+                                    subtitle: Text(
+                                      '${e.category} • ${_dt(e.startAt)} - ${_dt(e.endAt)}',
+                                    ),
+                                    trailing: const Icon(
+                                      Icons.chevron_right_rounded,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -160,7 +183,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       children: [
         Text(label, style: const TextStyle(color: Color(0xFF6C6678))),
         const SizedBox(height: 4),
-        Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700)),
+        Text(
+          value,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
+        ),
       ],
     );
   }
@@ -179,7 +205,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
             Text('Начало: ${_dt(event.startAt)}'),
             Text('Конец: ${_dt(event.endAt)}'),
             const SizedBox(height: 8),
-            Text('Исполнители: ${event.performerNames.isEmpty ? 'Не назначены' : event.performerNames.join(', ')}'),
+            Text(
+              'Исполнители: ${event.performerNames.isEmpty ? 'Не назначены' : event.performerNames.join(', ')}',
+            ),
             if (event.description.trim().isNotEmpty) ...[
               const SizedBox(height: 8),
               Text('Описание: ${event.description.trim()}'),
@@ -260,7 +288,11 @@ class _StaffApprovalDialogState extends State<_StaffApprovalDialog> {
       );
       return;
     }
-    await app.api.createWorkPoint(app.session!.token, title: title, address: address);
+    await app.api.createWorkPoint(
+      app.session!.token,
+      title: title,
+      address: address,
+    );
     _wpTitle.clear();
     _wpAddress.clear();
     await _load();
@@ -303,7 +335,9 @@ class _StaffApprovalDialogState extends State<_StaffApprovalDialog> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _wpTitle,
-                      decoration: const InputDecoration(labelText: 'Название точки'),
+                      decoration: const InputDecoration(
+                        labelText: 'Название точки',
+                      ),
                     ),
                     const SizedBox(height: 8),
                     TextField(
@@ -328,31 +362,47 @@ class _StaffApprovalDialogState extends State<_StaffApprovalDialog> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(staff.name, style: Theme.of(context).textTheme.titleMedium),
+                                Text(
+                                  staff.name,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
                                 Text('Логин: ${staff.email}'),
-                                Text('Пароль: ${staff.password.isEmpty ? 'не задан' : staff.password}'),
+                                Text(
+                                  'Пароль: ${staff.password.isEmpty ? 'не задан' : staff.password}',
+                                ),
                                 const SizedBox(height: 8),
                                 DropdownButtonFormField<int>(
-                                  value: _selectedWorkPoint[staff.id],
+                                  initialValue: _selectedWorkPoint[staff.id],
                                   items: _workPoints
                                       .map(
                                         (point) => DropdownMenuItem<int>(
                                           value: point.id,
-                                          child: Text('${point.title} (${point.address})'),
+                                          child: Text(
+                                            '${point.title} (${point.address})',
+                                          ),
                                         ),
                                       )
                                       .toList(),
                                   onChanged: (value) {
                                     if (value == null) return;
-                                    setState(() => _selectedWorkPoint[staff.id] = value);
+                                    setState(
+                                      () =>
+                                          _selectedWorkPoint[staff.id] = value,
+                                    );
                                   },
-                                  decoration: const InputDecoration(labelText: 'Рабочая точка'),
+                                  decoration: const InputDecoration(
+                                    labelText: 'Рабочая точка',
+                                  ),
                                 ),
                                 const SizedBox(height: 8),
                                 Align(
                                   alignment: Alignment.centerRight,
                                   child: FilledButton(
-                                    onPressed: _workPoints.isEmpty ? null : () => _approve(staff),
+                                    onPressed: _workPoints.isEmpty
+                                        ? null
+                                        : () => _approve(staff),
                                     child: const Text('Подтвердить'),
                                   ),
                                 ),
@@ -385,7 +435,10 @@ class _StaffApprovalDialogState extends State<_StaffApprovalDialog> {
               ),
       ),
       actions: [
-        TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Закрыть')),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Закрыть'),
+        ),
       ],
     );
   }
